@@ -3,9 +3,10 @@
 ;; Copyright © 2025, by Ta Quang Trung
 
 ;; Author: Ta Quang Trung
-;; Version: 0.0.1
+;; Version: 0.1
 ;; Created: 25 March 2025
 ;; Keywords: languages
+;; Package-Requires: ((emacs "24.3"))
 ;; Homepage: https://github.com/taquangtrung/emacs-circom-mode
 
 ;; This program is free software; you can redistribute it and/or modify
