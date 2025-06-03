@@ -109,7 +109,9 @@ The operators are matched in the 1st group."
   (list
    `(,circom-keyword-regexp . font-lock-keyword-face)
    `(,circom-type-regexp . font-lock-type-face)
-   `(circom-match-operators (1 font-lock-operator-face keep))
+   ;; HACK: Temporarily use `font-lock-negation-char-face' for operators.
+   ;; Not sure why using `font-lock-operator-face' doesn't highlight the operators.
+   `(circom-match-operators (1 font-lock-negation-char-face keep))
    `(circom-match-template-declaration (1 font-lock-function-name-face)))
   "Font lock keywords of `circom-mode'.")
 
