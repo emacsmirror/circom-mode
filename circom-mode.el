@@ -34,7 +34,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Syntax highlighting
 
-(defconst circom--keywords
+(defconst circom-keywords
   '("assert"
     "bus"
     "circom"
@@ -46,9 +46,7 @@
     "function"
     "if"
     "include"
-    "input"
     "log"
-    "output"
     "parallel"
     "pragma"
     "public"
@@ -57,31 +55,62 @@
     "template"
     "var"
     "while")
-  "Circom keywords.")
+  "List of Circom keywords.")
 
-(defvar circom--regexp-keyword
+(defconst circom-operators
+  '("<--"
+    "<=="
+    "-->"
+    "==>"
+    "===")
+  "List of Circom operators.")
+
+(defconst circom-types
+  '("input"
+    "output")
+  "List of Circom types.")
+
+(defvar circom-keyword-regexp
   (concat
    (rx symbol-start)
-   (regexp-opt circom--keywords t)
+   (regexp-opt circom-keywords t)
    (rx symbol-end))
-  "Regular expression to match Circom keywords.")
+  "Regular expression to match keywords.")
 
-(defvar circom--regexp-template-name
-  "[a-zA-Z0-9_]+"
-  "Regular expression to match Circom template names.")
+(defvar circom-type-regexp
+  (concat
+   (rx symbol-start)
+   (regexp-opt circom-types t)
+   (rx symbol-end))
+  "Regular expression to match data types.")
 
-(defvar circom--regexp-template-decl-name
-  (concat "\s*template\s+\\(" circom--regexp-template-name "\\)\s*\(")
-  "Regular expression to match Circom template declaration names.")
+(defvar circom-template-declaration-regexp
+  "^\s*template\s+\\([a-zA-Z0-9_]+\\)\s*{"
+  "Regular expression to match template declaration types.")
 
-(defun circom--match-template-decl-name (limit)
-  "Search the buffer forward until LIMIT to match template declaration names."
-  (re-search-forward circom--regexp-template-decl-name limit t nil))
+(defun circom-match-regexp (regexp bound)
+  "Generic regular expression matching wrapper for REGEXP until a BOUND position."
+  (re-search-forward regexp bound t nil))
+
+(defun circom-match-operators (bound)
+  "Search the buffer forward until the BOUND position to match operators.
+The operators are matched in the 1st group."
+  (circom-match-regexp
+   (concat (rx (or alnum space "(" ")"))
+           (regexp-opt circom-operators t)
+           (rx (or alnum space "(" ")")))
+   bound))
+
+(defun circom-match-template-declaration (bound)
+  "Search the buffer forward until BOUND to match template declaration names."
+  (circom-match-regexp circom-template-declaration-regexp bound))
 
 (defconst circom-font-lock-keywords
   (list
-   `(,circom--regexp-keyword . font-lock-keyword-face)
-   '(circom--match-template-decl-name (1 font-lock-function-name-face)))
+   `(,circom-keyword-regexp . font-lock-keyword-face)
+   `(,circom-type-regexp . font-lock-type-face)
+   `(circom-match-operators (1 font-lock-operator-face keep))
+   `(circom-match-template-declaration (1 font-lock-function-name-face)))
   "Font lock keywords of `circom-mode'.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -91,7 +120,7 @@
   "Indent the current line according to the Circom syntax, or supply INDENT."
   (interactive "P")
   (let ((pos (- (point-max) (point)))
-        (indent (or indent (circom--calculate-indentation)))
+        (indent (or indent (circom-calculate-indentation)))
         (shift-amount nil)
         (beg (line-beginning-position)))
     (skip-chars-forward " \t")
@@ -104,7 +133,7 @@
       (when (> (- (point-max) pos) (point))
         (goto-char (- (point-max) pos))))))
 
-(defun circom--calculate-indentation ()
+(defun circom-calculate-indentation ()
   "Calculate the indentation of the current line."
   (let (indent)
     (save-excursion
@@ -128,14 +157,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Imenu settings
 
-(defvar circom--imenu-generic-expression
-  `(("Function" ,circom--regexp-template-decl-name 1))
+(defvar circom-imenu-generic-expression
+  `(("Function" ,circom-template-declaration-regexp 1))
   "Regular expression to generate Imenu outline.")
 
-(defun circom--imenu-create-index ()
+(defun circom-imenu-create-index ()
   "Generate outline of Circom circuit for imenu-mode."
   (save-excursion
-    (imenu--generic-function circom--imenu-generic-expression)))
+    (imenu--generic-function circom-imenu-generic-expression)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Define major mode
@@ -169,7 +198,7 @@
   (setq-local comment-use-syntax t)
 
   ;; Configure imenu
-  (setq-local imenu-create-index-function #'circom--imenu-create-index))
+  (setq-local imenu-create-index-function #'circom-imenu-create-index))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.circom\\'" . circom-mode))
