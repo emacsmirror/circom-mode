@@ -105,6 +105,15 @@ The operators are matched in the 1st group."
   "Search the buffer forward until BOUND to match template declaration names."
   (circom-match-regexp circom-template-declaration-regexp bound))
 
+(defun circom-match-template-call (bound)
+  "Search the buffer forward until BOUND to match template declaration names."
+  (circom-match-regexp
+   (concat (rx symbol-start)
+           "\\([a-zA-Z0-9_]+\\)"
+           (rx symbol-end)
+           "[\s\t]*\(")
+   bound))
+
 (defconst circom-font-lock-keywords
   (list
    `(,circom-keyword-regexp . font-lock-keyword-face)
@@ -112,6 +121,7 @@ The operators are matched in the 1st group."
    ;; HACK: Temporarily use `font-lock-negation-char-face' for operators.
    ;; Not sure why using `font-lock-operator-face' doesn't highlight the operators.
    `(circom-match-operators (1 font-lock-negation-char-face keep))
+   `(circom-match-template-call (1 font-lock-function-name-face))
    `(circom-match-template-declaration (1 font-lock-function-name-face)))
   "Font lock keywords of `circom-mode'.")
 
