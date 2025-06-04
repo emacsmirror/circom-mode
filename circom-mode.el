@@ -57,13 +57,11 @@
     "while")
   "List of Circom keywords.")
 
-(defconst circom-operators
-  '("<--"
-    "<=="
-    "-->"
+(defconst circom-constraint-operators
+  '("<=="
     "==>"
     "===")
-  "List of Circom operators.")
+  "List of Circom constraint operators.")
 
 (defconst circom-types
   '("input"
@@ -92,12 +90,12 @@
   "Generic regular expression matching wrapper for REGEXP until a BOUND position."
   (re-search-forward regexp bound t nil))
 
-(defun circom-match-operators (bound)
-  "Search the buffer forward until the BOUND position to match operators.
-The operators are matched in the 1st group."
+(defun circom-match-constraint-operators (bound)
+  "Search the buffer forward until the BOUND position to match constraint operators.
+The constraint operators are matched in the 1st group."
   (circom-match-regexp
    (concat (rx (or alnum space "(" ")"))
-           (regexp-opt circom-operators t)
+           (regexp-opt circom-constraint-operators t)
            (rx (or alnum space "(" ")")))
    bound))
 
@@ -118,9 +116,7 @@ The operators are matched in the 1st group."
   (list
    `(,circom-keyword-regexp . font-lock-keyword-face)
    `(,circom-type-regexp . font-lock-type-face)
-   ;; HACK: Temporarily use `font-lock-negation-char-face' for operators.
-   ;; Not sure why using `font-lock-operator-face' doesn't highlight the operators.
-   `(circom-match-operators (1 font-lock-negation-char-face keep))
+   `(circom-match-constraint-operators (1 font-lock-preprocessor-face))
    `(circom-match-template-call (1 font-lock-function-name-face))
    `(circom-match-template-declaration (1 font-lock-function-name-face)))
   "Font lock keywords of `circom-mode'.")
